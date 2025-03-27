@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation - TrainBooker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #1a3a6e;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav {
+            background-color: #2c4c7c;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+        }
+        .nav-links {
+            display: flex;
+        }
+        nav a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            background-color: #3a5a8a;
+        }
+        .user-actions {
+            display: flex;
+        }
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .confirmation-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .confirmation-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #27ae60;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2.5rem;
+        }
+        .confirmation-title {
+            font-size: 1.8rem;
+            color: #27ae60;
+            margin-bottom: 1rem;
+        }
+        .confirmation-message {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        .booking-details {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: bold;
+        }
+        .booking-id {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1a3a6e;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #1a3a6e;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin: 0 10px;
+        }
+        .btn:hover {
+            background-color: #2c4c7c;
+        }
+        .btn-dashboard {
+            background-color: #27ae60;
+        }
+        .btn-dashboard:hover {
+            background-color: #219653;
+        }
+        footer {
+            background-color: #1a3a6e;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+            }
+            .nav-links, .user-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+        #loginStatus {
+            padding: 14px 16px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>रेलयात्रा</h1>
+    <p>Book your train tickets easily and securely</p>
+</header>
+<nav>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="trains.html">Trains</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+    </div>
+    <div class="user-actions" id="userNav">
+        <!-- User navigation will be loaded dynamically -->
+    </div>
+</nav>
+<main>
+    <div class="confirmation-container">
+        <div class="confirmation-icon">✓</div>
+        <h2 class="confirmation-title">Booking Confirmed!</h2>
+        <p class="confirmation-message">Your train ticket has been booked successfully. Thank you for choosing TrainBooker.</p>
+
+        <div class="booking-id" id="bookingId">
+            <!-- Booking ID will be loaded dynamically -->
+        </div>
+
+        <div class="booking-details" id="bookingDetails">
+            <!-- Booking details will be loaded dynamically -->
+        </div>
+
+        <div class="actions">
+            <a href="dashboard.html" class="btn btn-dashboard">View My Bookings</a>
+            <a href="index.html" class="btn">Back to Home</a>
+        </div>
+    </div>
+</main>
+<footer>
+    <p>&copy; 2025 रेलयात्रा. All rights reserved.</p>
+</footer>
+
+<script>
+    // Check if user is logged in
+    function checkLoginStatus() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const userNav = document.getElementById('userNav');
+
+        if (currentUser) {
+            userNav.innerHTML = `
+                <span id="loginStatus">Welcome, ${currentUser.username}</span>
+                <a href="dashboard.html">My Bookings</a>
+                ${currentUser.isAdmin ? '<a href="admin.html">Admin Panel</a>' : ''}
+                <a href="#" id="logoutBtn">Logout</a>
+            `;
+
+            // Add logout functionality
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            });
+        } else {
+            // Redirect to login if not logged in
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Load booking confirmation
+    function loadBookingConfirmation() {
+        const bookingConfirmation = JSON.parse(sessionStorage.getItem('bookingConfirmation'));
+
+        if (!bookingConfirmation) {
+            alert('No booking confirmation found');
+            window.location.href = 'trains.html';
+            return;
+        }
+
+        // Get train details
+        const trains = JSON.parse(localStorage.getItem('trains'));
+        const train = trains.find(t => t.id == bookingConfirmation.trainId);
+
+
+
+        // Display booking ID
+        document.getElementById('bookingId').textContent = `Booking ID: TB-${bookingConfirmation.bookingId.toString().padStart(6, '0')}`;
+
+        // Display booking details
+        const bookingDetails = document.getElementById('bookingDetails');
+        bookingDetails.innerHTML = `
+            <div class="detail-row">
+                <span class="detail-label">Train:</span>
+                <span>${train.trainNumber} - ${train.name}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Seat No:</span>
+                <span>${bookingConfirmation.seatNumber}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Route:</span>
+                <span>${train.from} to ${train.to}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span>${train.date}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Departure:</span>
+                <span>${train.departureTime}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Arrival:</span>
+                <span>${train.arrivalTime}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Passengers:</span>
+                <span>${bookingConfirmation.passengers}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Total Price:</span>
+                <span>₹${bookingConfirmation.totalPrice}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span>Confirmed</span>
+            </div>
+        `;
+
+        // Clear booking confirmation from sessionStorage
+        sessionStorage.removeItem('bookingConfirmation');
+    }
+
+    // Initialize the page
+    window.onload = function() {
+        checkLoginStatus();
+        loadBookingConfirmation();
+    };
+</script>
+</body>
+</html>

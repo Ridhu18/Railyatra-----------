@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - TrainBooker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #1a3a6e;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav {
+            background-color: #2c4c7c;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+        }
+        .nav-links {
+            display: flex;
+        }
+        nav a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            background-color: #3a5a8a;
+        }
+        .user-actions {
+            display: flex;
+        }
+        .active {
+            background-color: #3a5a8a;
+        }
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: calc(100vh - 150px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #1a3a6e;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #1a3a6e;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            background-color: #2c4c7c;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .register-link a {
+            color: #1a3a6e;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #e74c3c;
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+        footer {
+            background-color: #1a3a6e;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+            }
+            .nav-links, .user-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>रेलयात्रा</h1>
+    <p>Book your train tickets easily and securely</p>
+</header>
+<nav>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="trains.html">Trains</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+    </div>
+    <div class="user-actions">
+        <a href="login.html" class="active">Login</a>
+        <a href="register.html">Register</a>
+    </div>
+</nav>
+<main>
+    <div class="login-container">
+        <h2>Login to Your Account</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">Login</button>
+            <div id="errorMessage" class="error-message">Invalid username or password</div>
+        </form>
+        <div class="register-link">
+            <p>Don't have an account? <a href="register.html">Register here</a></p>
+        </div>
+    </div>
+</main>
+<footer>
+    <p>&copy; 2025 रेलयात्रा. All rights reserved.</p>
+</footer>
+
+<script>
+    // Check if user is already logged in
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser) {
+            // Redirect to home page if already logged in
+            window.location.href = 'index.html';
+        }
+    });
+
+    // Handle login form submission
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Hide error message
+        document.getElementById('errorMessage').style.display = 'none';
+
+        // Call the login API
+        fetch('http://localhost:8080/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Login failed');
+            }
+            return response.json();
+        })
+        .then(user => {
+            // Store user in localStorage
+            localStorage.setItem('currentUser', JSON.stringify(user));
+
+            // Redirect based on user role
+            if (user.admin) {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        })
+        .catch(error => {
+            // Show error message
+            document.getElementById('errorMessage').style.display = 'block';
+            console.error('Login error:', error);
+        });
+    });
+</script>
+</body>
+</html>
+

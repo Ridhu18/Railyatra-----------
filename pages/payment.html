@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - TrainBooker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #1a3a6e;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav {
+            background-color: #2c4c7c;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+        }
+        .nav-links {
+            display: flex;
+        }
+        nav a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            background-color: #3a5a8a;
+        }
+        .user-actions {
+            display: flex;
+        }
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .payment-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .booking-summary {
+            flex: 1 1 400px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        .payment-form {
+            flex: 1 1 600px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        .section-title {
+            color: #1a3a6e;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        .booking-details {
+            margin-bottom: 1.5rem;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .detail-label {
+            font-weight: bold;
+        }
+        .price-summary {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1.5rem;
+        }
+        .total-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .card-inputs {
+            display: flex;
+            gap: 10px;
+        }
+        .card-number {
+            flex: 2;
+        }
+        .card-expiry, .card-cvv {
+            flex: 1;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #1a3a6e;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font: 0.3s;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            background-color: #2c4c7c;
+        }
+        .btn-pay {
+            background-color: #27ae60;
+        }
+        .btn-pay:hover {
+            background-color: #219653;
+        }
+        .payment-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .payment-method {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-method.active {
+            border-color: #1a3a6e;
+            background-color: #f0f7ff;
+        }
+        .payment-method img {
+            height: 30px;
+            margin-bottom: 5px;
+        }
+        footer {
+            background-color: #1a3a6e;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1a3a6e;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+            }
+            .nav-links, .user-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            .card-inputs {
+                flex-direction: column;
+            }
+        }
+        #loginStatus {
+            padding: 14px 16px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>रेलयात्रा</h1>
+    <p>Book your train tickets easily and securely</p>
+</header>
+<nav>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="trains.html">Trains</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+    </div>
+    <div class="user-actions" id="userNav">
+        <!-- User navigation will be loaded dynamically -->
+    </div>
+</nav>
+<main>
+    <h2>Complete Your Booking</h2>
+    <div class="payment-container">
+        <div class="booking-summary">
+            <h3 class="section-title">Booking Summary</h3>
+            <div class="booking-details" id="bookingSummary">
+                <!-- Booking summary will be loaded dynamically -->
+            </div>
+        </div>
+        <div class="payment-form">
+            <h3 class="section-title">Payment Details</h3>
+            <div class="payment-methods">
+                <div class="payment-method active" data-method="credit-card">
+                    <img src="/placeholder.svg?height=30&width=50" alt="Credit Card">
+                    <div>Credit Card</div>
+                </div>
+                <div class="payment-method" data-method="paypal">
+                    <img src="/placeholder.svg?height=30&width=50" alt="PayPal">
+                    <div>PayPal</div>
+                </div>
+                <div class="payment-method" data-method="bank-transfer">
+                    <img src="/placeholder.svg?height=30&width=50" alt="Bank Transfer">
+                    <div>Bank Transfer</div>
+                </div>
+            </div>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="cardName">Name on Card</label>
+                    <input type="text" id="cardName" name="cardName" required>
+                </div>
+                <div class="card-inputs">
+                    <div class="form-group card-number">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required>
+                    </div>
+                    <div class="form-group card-expiry">
+                        <label for="cardExpiry">Expiry Date</label>
+                        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" required>
+                    </div>
+                    <div class="form-group card-cvv">
+                        <label for="cardCvv">CVV</label>
+                        <input type="text" id="cardCvv" name="cardCvv" placeholder="123" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="billingAddress">Billing Address</label>
+                    <input type="text" id="billingAddress" name="billingAddress" required>
+                </div>
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+                <div class="form-group">
+                    <label for="zipCode">Zip Code</label>
+                    <input type="text" id="zipCode" name="zipCode" required>
+                </div>
+                <button type="submit" class="btn btn-pay">Pay Now</button>
+            </form>
+        </div>
+    </div>
+</main>
+<footer>
+    <p>&copy; 2025 रेलयात्रा. All rights reserved.</p>
+</footer>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<script>
+    // Check if user is logged in
+    function checkLoginStatus() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const userNav = document.getElementById('userNav');
+
+        if (currentUser) {
+            userNav.innerHTML = `
+                <span id="loginStatus">Welcome, ${currentUser.username}</span>
+                <a href="dashboard.html">My Bookings</a>
+                ${currentUser.admin ? '<a href="admin.html">Admin Panel</a>' : ''}
+                <a href="#" id="logoutBtn">Logout</a>
+            `;
+
+            // Add logout functionality
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            });
+        } else {
+            // Redirect to login if not logged in
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Load booking details
+    function loadBookingDetails() {
+        const bookingDetails = JSON.parse(sessionStorage.getItem('bookingDetails'));
+
+        if (!bookingDetails) {
+            alert('No booking details found');
+            window.location.href = 'trains.html';
+            return;
+        }
+
+        // Get train details
+        fetch(`http://localhost:8080/api/trains/${bookingDetails.trainId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load train details');
+                }
+                return response.json();
+            })
+            .then(train => {
+                // Calculate total price
+                const totalPrice = train.price * bookingDetails.passengers;
+
+                // Display booking summary
+                const bookingSummary = document.getElementById('bookingSummary');
+                bookingSummary.innerHTML = `
+                    <div class="detail-row">
+                        <span class="detail-label">Train:</span>
+                        <span>${train.trainNumber} - ${train.name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Route:</span>
+                        <span>${train.fromStation} to ${train.toStation}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Date:</span>
+                        <span>${train.date}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Departure:</span>
+                        <span>${train.departureTime.substring(0, 5)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Arrival:</span>
+                        <span>${train.arrivalTime.substring(0, 5)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Passengers:</span>
+                        <button onclick="changePassengers(-1)">-</button>
+                        <input type="number" id="passengerCount" value="${bookingDetails.passengers}" min="1">
+                        <button onclick="changePassengers(1)">+</button>
+                    </div>
+
+                    <div class="price-summary">
+                        <div class="detail-row">
+                            <span class="detail-label">Price per passenger:</span>
+                            <span>₹${train.price}</span>
+                        </div>
+                        <div class="total-price">Total: ₹${totalPrice}</div>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                console.error('Error loading train details:', error);
+                alert('Error loading train details. Please try again.');
+                window.location.href = 'trains.html';
+            });
+    }
+
+    // Handle payment method selection
+    document.querySelectorAll('.payment-method').forEach(method => {
+        method.addEventListener('click', function() {
+            // Remove active class from all methods
+            document.querySelectorAll('.payment-method').forEach(m => {
+                m.classList.remove('active');
+            });
+
+            // Add active class to clicked method
+            this.classList.add('active');
+        });
+    });
+
+    // Handle payment form submission
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Show loading overlay
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
+        // Get booking details
+        const bookingDetails = JSON.parse(sessionStorage.getItem('bookingDetails'));
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const userId = currentUser.id;
+        console.log("trainid",bookingDetails)
+        // Create booking
+        fetch('http://localhost:8080/api/bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: userId,
+                trainId: bookingDetails.trainId,
+                passengers: parseInt(bookingDetails.passengers)
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Booking failed');
+            }
+            return response.json();
+        })
+        .then(booking => {
+            // Hide loading overlay
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            // Store booking confirmation in sessionStorage
+            sessionStorage.setItem('bookingConfirmation', JSON.stringify({
+                seatNumber: booking.seatNumber,
+                bookingId: booking.id,
+                trainId: booking.trainId,
+                passengers: booking.passengers,
+                totalPrice: booking.totalPrice
+            }));
+
+            // Clear booking details
+            sessionStorage.removeItem('bookingDetails');
+
+            // Redirect to confirmation page
+            window.location.href = 'confirmation.html';
+        })
+        .catch(error => {
+            // Hide loading overlay
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            console.error('Booking error:', error);
+            alert('Booking failed. Please try again later.');
+        });
+    });
+
+function changePassengers(change) {
+    let passengerInput = document.getElementById("passengerCount");
+    let currentPassengers = parseInt(passengerInput.value);
+
+    // Ensure passengers count doesn't go below 1
+    let newPassengers = Math.max(1, currentPassengers + change);
+    passengerInput.value = newPassengers;
+
+    // Update session storage
+    let bookingDetails = JSON.parse(sessionStorage.getItem('bookingDetails'));
+    bookingDetails.passengers = newPassengers;
+    sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+
+    // Fetch train details again to update the total price
+    updateTotalPrice(newPassengers);
+}
+
+function updateTotalPrice(passengers) {
+    const bookingDetails = JSON.parse(sessionStorage.getItem('bookingDetails'));
+
+    fetch(`http://localhost:8080/api/trains/${bookingDetails.trainId}`)
+        .then(response => response.json())
+        .then(train => {
+            const totalPrice = train.price * passengers;
+
+            // Update UI elements
+            document.querySelector(".total-price").textContent = `Total: ₹${totalPrice}`;
+            document.querySelector(".price-summary .detail-row:nth-child(3) span:last-child").textContent = passengers;
+        })
+        .catch(error => console.error('Error updating price:', error));
+}
+
+
+    // Initialize the page
+    window.onload = function() {
+        checkLoginStatus();
+        loadBookingDetails();
+    };
+</script>
+</body>
+</html>
+
